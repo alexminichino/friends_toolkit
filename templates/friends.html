@@ -1,0 +1,105 @@
+{% extends "./base.html" %}
+
+{% block title %}Friends{% endblock %}
+
+{% block menu %}
+<a class="btn btn-outline-primary" href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<h3>Friends list</h3>
+<h4>Number of friends {{friends|length}}</h4>
+
+<form action="/compose_message" method="POST">
+
+  {% if report_exitst %}
+    <a href="/report" class="btn btn-primary btn active" role="button" aria-pressed="true">Download latest report</a>
+  {% endif %}
+
+<table class="table">
+<thead>
+  <tr>
+    <th scope="col">UIID</th>
+    <th scope="col">Name</th>
+    <th scope="col">Profile Pic</th>
+    <th scope="col">Gender</th>
+    <th>
+      <span style="display: block;">
+        <span style="float: left;">Select All</span>
+        <input type="checkbox" id="select_all" class="form-check-input" onClick="toggle_all(this)" style="display: block;">
+      </span><br>
+
+      <span style="display: block;">
+        <span style="float: left;">Select not contacted</span>
+        <input type="checkbox" id="select_all" class="form-check-input" onClick="toggle_new(this)" style="display: block;">
+      </span>
+    </th>
+  </tr>
+</thead>
+<tbody>
+{% for user in friends %}
+{% if user.uid in contacted_friends %}
+    <tr style="background-color: lightcoral;" class="contected">  
+  {% else %}
+  <tr style="background-color: lightblue;" class="not_contected">  
+  {% endif %}
+
+  <th scope="row">{{user.uid}}</th>
+  <td><a href="{{user.url}}">{{user.name}}</a></td>
+  <td><img src="{{user.photo}}" style="height:50px;"></td>
+  <td>
+    {% if user.gender.startswith('male_') %}
+      <i class="fa fa-mars" style="font-size:48px;color:blue"></i>
+    {% elif user.gender.startswith('female_') %}
+      <i class="fa fa-venus" style="font-size:48px;color:purple"></i>
+    {% else %}
+      <i class="fa fa-genderless" style="font-size:48px;color:red"></i>
+    {% endif %}
+  </td>
+  <td>
+  <input type="checkbox" name="selected_users" class="select_users  form-check-input" value="{{user.uid}}" onClick="onselectedItem()">
+
+  </td>  
+  
+</tr>
+ {% endfor %}
+</tbody>
+</table>
+<button type="submit" id="compose_button" class="btn btn-primary" style="position: fixed;bottom: 26px;left: 45%;right: 45%;display:none;">Compose Message</button>
+</form>
+
+  {% if feedback %}
+  <p class="text-danger float-right">{{ feedback }}</p>
+  {% endif %}
+{% endblock %}
+
+{% block footer %}
+  <script>
+    function toggle_all(source){
+      $(".select_users").prop('checked', source.checked);
+      onselectedItem();
+    } 
+    function onselectedItem(){      
+      if ($(".select_users").is(":checked")){
+        $("#compose_button").show();
+      }
+      else{
+        $("#compose_button").hide();
+      }
+    } 
+
+    function toggle_new(source){
+    $(".not_contected").find(".select_users").prop('checked', source.checked);
+      onselectedItem();
+    } 
+    function onselectedItem(){      
+      if ($(".select_users").is(":checked")){
+        $("#compose_button").show();
+      }
+      else{
+        $("#compose_button").hide();
+      }
+    } 
+  </script>
+{% endblock %}
+

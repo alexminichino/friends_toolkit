@@ -1,0 +1,80 @@
+{% extends "./base.html" %}
+
+{% block title %}Compose message{% endblock %}
+
+{% block menu %}
+<a class="btn btn-outline-primary" href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<h4>Compose message</h4>
+<h5>Number of selected friends {{friends|length}}</h5>
+<h6>Selected Friends:</h6>
+<div class="overflow-auto" style="border:1px solid lightgrey;height:100px">
+  {% for user in friends %}
+    <span>{{user.name}}</span><br>
+  {% endfor %}
+</div>
+<form action="/send_message" method="POST"  enctype="multipart/form-data">
+  <div class="form-group">
+    <label for="message">Message to send (use first_name for first name of users or name inner double brackets for complete name ) like this <button  onclick="toggleExample()" type="button" class="btn btn-info">example</button>
+      <div style="text-align: center;">
+        <img id="img_example" style="display:none" src="data:image/png;base64,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">
+      </div>
+      </label>
+    <textarea required name="message" class="form-control" id="message" rows="6"></textarea>
+  </div>
+  <div class="form-group">
+    <label for="image_picker">Upload Images to send after message</label>
+    <input type="file" accept="image/*" name="images" class="form-control-file" id="image_picker" multiple>
+  </div>
+
+  <div class="form-group">
+    <label for="select_min_time">Minimum waiting time (in seconds)</label>
+    <select id="select_min_time" name="min_time" class="form-control form-control-lg">
+      <option selected value="30">30</option>
+      <option value="45">45</option>
+      <option value="60">60</option>
+      <option value="90">90</option>
+      <option value="120">120</option>
+      <option value="180">180</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+  <label for="select_max_time">Maximum waiting time (in seconds)</label>
+  <select id="select_max_time" name="max_time" class="form-control form-control-lg">
+    <option selected value="50">50</option>
+    <option value="65">65</option>
+    <option value="80">80</option>
+    <option value="110">110</option>
+    <option value="140">140</option>
+    <option value="200">200</option>
+  </select>
+</div>
+
+<div class="overflow-auto" style="border:1px solid lightgrey;max-height:150px">
+  {% for old_image in old_images %}
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" id="{{old_image}}" value="{{old_image}}" name="old_images">
+    <label class="form-check-label" for="{{old_image}}">
+      <img style="height: 50px;" src="/uploads/{{old_image}}" />
+    </label>
+  </div>
+  {% endfor %}
+</div>
+<div class="form-group" style="margin-top: 20px;">
+  <button style="width: 100%;" submit" class="btn btn-primary">Send Message</button>
+</div>
+</form>
+
+{% endblock %}
+
+{% block footer %}
+  <script>
+    function toggleExample(){
+      $("#img_example").slideToggle()
+    }
+  </script>
+{% endblock %}
+
