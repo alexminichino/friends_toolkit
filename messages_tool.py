@@ -12,7 +12,7 @@ class MessagesTool(object):
     def send_message(self,user, message):
         self.client.send(Message(text=message), thread_id=user.uid, thread_type=ThreadType.USER)
 
-    def send_image_to_user(self, user, image_path, caption):
+    def send_image(self, user, image_path, caption):
         self.client.sendLocalImage(
             image_path,
             message=Message(text=caption),

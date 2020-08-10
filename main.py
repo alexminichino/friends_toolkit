@@ -92,7 +92,7 @@ def send_messages():
             if saved_images :
                 for image in saved_images:
                     time.sleep(2)
-                    messages_tool.send_image_to_user(user,image,"")
+                    messages_tool.send_image(user,image,"")
             time.sleep(time_to_sleep)
     flash(str(messages_sent)+' Messages sent')
     return redirect("/select_friends")
