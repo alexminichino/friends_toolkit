@@ -31,7 +31,7 @@
 
       <span style="display: block;">
         <span style="float: left;">Select not contacted</span>
-        <input type="checkbox" id="select_all" class="form-check-input" onClick="toggle_new(this)" style="display: block;">
+        <input type="checkbox" id="select_all_new" class="form-check-input" onClick="toggle_new(this)" style="display: block;">
       </span>
     </th>
   </tr>
@@ -76,6 +76,7 @@
 {% block footer %}
   <script>
     function toggle_all(source){
+      $("#select_all_new").prop('checked', false);
       $(".select_users").prop('checked', source.checked);
       onselectedItem();
     } 
@@ -89,6 +90,7 @@
     } 
 
     function toggle_new(source){
+    $("#select_all").prop('checked', false);
     $(".not_contected").find(".select_users").prop('checked', source.checked);
       onselectedItem();
     } 

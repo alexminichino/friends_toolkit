@@ -3,13 +3,13 @@ from fbchat.models import *
 
 class MessagesTool(object):
     
-    def __init__(self,email, password):    
+    def __init__(self,email="fakeemail@gmail.com", password ="fakePassword"): #Fake credentials are needed in case of authentication by Session Cookie  
        self.authenticated = False
        self.email= email
        self.password= password       
         
 
-    def send_message_to_user(self,user, message):
+    def send_message(self,user, message):
         self.client.send(Message(text=message), thread_id=user.uid, thread_type=ThreadType.USER)
 
     def send_image_to_user(self, user, image_path, caption):
@@ -25,7 +25,7 @@ class MessagesTool(object):
 
     def authenticate(self):
         try:
-            self.client = MyClient(self.email,self.password)
+            self.client = MyClient(self.email,self.password, max_tries=2)
             self.authenticated = True
             return True
         except FBchatUserError as exception:
@@ -40,7 +40,7 @@ class MessagesTool(object):
 
     def getSessionClient(self, session):
         try:
-            self.client = MyClient('fakeemail@gmail.com', 'fakepassword', session_cookies= session, max_tries=1)
+            self.client = MyClient(self.email, self.password, session_cookies= session, max_tries=1)
             self.authenticated = self.client.isLoggedIn()
         except FBchatUserError as exception:            
             self.authenticated=False            
