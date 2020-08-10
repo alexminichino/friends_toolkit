@@ -52,7 +52,7 @@ In this are displayed selected frinds, below you can write the message to send i
 The message could be like this:
 Hi {{fisrt_name}}, how are you?
 And th user (named for example John) will receive message with own first name:
-Hi Hi John, how are you?
+Hi John, how are you?
 
 Easy, right?
 
