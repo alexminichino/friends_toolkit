@@ -63,6 +63,8 @@ The waiting time is defined as random number between min_time and max_time.
 
 When you click on "Send message" button you will redirected on friends list page, after that you can find a new button wich allow to download a report, in CSV format, in wich are reported infos like information on users, message, date and time of sended messages.
 
+<img src="/readmedia/report.png" width="100%">
+
 Note that frinds who are previously contacted are displayed in red in list!
 
 
