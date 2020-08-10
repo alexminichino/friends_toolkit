@@ -11,7 +11,7 @@ First of all you need to install Python3 and pip package manager, you can downlo
 Now, you can clone the project:
 
 
-`$ git clone https://github.com/alexminichino`
+`$ git clone https://github.com/alexminichino/friends_toolkit.git`
 
 (You can also directly donload the project end extract it)
 
