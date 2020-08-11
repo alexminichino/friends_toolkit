@@ -5,6 +5,7 @@ import csv
 import datetime
 import webbrowser
 import math
+import sys
 from flask import Flask, render_template, redirect, request, session,flash, send_file
 from werkzeug.utils import secure_filename
 from messages_tool import *
@@ -68,9 +69,8 @@ def compose_message():
     old_images = os.listdir(os.path.join(UPLOAD_DIRECTORY))
     selected_users= request.form.getlist("selected_users")  
     if 'selected_users' in session :
-        selected_users = selected_users + session['selected_users']
-    else:
-        session['selected_users'] = selected_users  
+         selected_users = selected_users + list( set(session['selected_users']) - set(selected_users))
+    session['selected_users'] = selected_users  
     if len(selected_users) < 1:
         flash("Select at least 1 friend!")
         return redirect("/select_friends") 
@@ -104,14 +104,15 @@ def send_messages():
             message=message_backup
             message= message.replace("{{name}}",user.name)
             message= message.replace("{{first_name}}",user.first_name)
-            messages_tool.send_message(user,message)  
-            log_message(user,message)
+            messages_tool.send_message(user,message) 
             messages_sent+=1
+            log_message(user,message, messages_sent, len(selected_users))
             if saved_images :
                 for image in saved_images:
                     time.sleep(2)
                     messages_tool.send_image(user,image,"")
-            time.sleep(time_to_sleep)
+            if messages_sent < len(selected_users):
+                time.sleep(time_to_sleep)
     flash(str(messages_sent)+' Messages sent')
     return redirect("/select_friends?reset=True")
 
@@ -146,19 +147,21 @@ def get_path_by_old_image(old_images):
         paths.append(os.path.join(UPLOAD_DIRECTORY, old_image))
     return paths
 
-def log_message(user,message):
+def log_message(user,message, messages_sent, total):
     if os.path.exists(REPORT_FILE_NAME):
         mode = 'a' 
     else:
         mode = 'w'
     f = open(REPORT_FILE_NAME, mode)
+    now = datetime.datetime.now() 
     with f:
         fnames = ['UID', 'NAME', "MESSAGE", "DATE", "TIME"]
         writer = csv.DictWriter(f, fieldnames=fnames)
         if mode=='w':                
             writer.writeheader()
-        now = datetime.datetime.now() 
         writer.writerow({'UID' : user.uid, 'NAME' : user.name,  'MESSAGE': message, 'DATE' : now.strftime("%x"), 'TIME' : now.strftime("%X") })
+    #LOG IN CONSOLE
+    print("\n\n\n******\n******Sent "+ str(messages_sent)+ " of "+ str(total) + " to user "+ user.name+ " at "+ now.strftime("%X") +"******\n******\n\n\n", file=sys.stdout )
 
 def get_contacted_friends_by_csv():
     rows =[]

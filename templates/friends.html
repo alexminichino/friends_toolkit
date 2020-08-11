@@ -76,7 +76,7 @@
  {% endfor %}
 </tbody>
 </table>
-<button type="submit" id="compose_button" class="btn btn-primary" style="position: fixed;bottom: 100px;left: 45%;right: 45%;display:none;">Compose Message</button>
+<button type="submit" id="compose_button" class="btn btn-primary" style="position: fixed;bottom: 100px;left: 45%;right: 45%; {{ 'display:none;' if selected_users|length < 1 }} ">Compose Message</button>
 </form>
 
 <nav aria-label="Page navigation example">
