@@ -105,7 +105,7 @@
  {% endfor %}
 </tbody>
 </table>
-<button type="submit" id="compose_button" class="btn btn-primary" style="position: fixed;bottom: 100px;left: 45%;right: 45%; {{ 'display:none;' if selected_users|length < 1 }} ">Compose Message</button>
+<button type="submit" id="compose_button" class="btn btn-primary {{ 'force_display' if selected_users|length > 0 }} " style="position: fixed;bottom: 100px;left: 45%;right: 45%; {{ 'display:none;' if selected_users|length < 1 }} ">Compose Message</button>
 </form>
 
 <nav aria-label="Page navigation example">
@@ -131,15 +131,6 @@
       $(".select_users").prop('checked', source.checked);
       onselectedItem();
     } 
-    function onselectedItem(){      
-      if ($(".select_users").is(":checked")){
-        $("#compose_button").show();
-      }
-      else{
-        $("#compose_button").hide();
-      }
-    } 
-
     function toggle_new(source){
       $("#select_all").prop('checked', false);
       $(".not_contected").find(".select_users").prop('checked', source.checked);
@@ -150,7 +141,8 @@
         $("#compose_button").show();
       }
       else{
-        $("#compose_button").hide();
+        if (! $("#compose_button").hasClass("force_display"))
+          $("#compose_button").hide();
       }
     } 
     function add_checkboxes(source){
