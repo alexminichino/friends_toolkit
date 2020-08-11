@@ -8,7 +8,12 @@
 
 {% block content %}
 <h3>Friends list</h3>
-<h4>Total number of friends {{number_friends}}</h4>
+{% if name_to_search|length > 0 %}
+    <h4>{{number_friends}} Results for <span style="font-weight: bold;">{{name_to_search}}</span></h4>
+  {% else %}
+    <h4>Total number of friends {{number_friends}}</h4>
+{% endif %}
+
 {% if selected_users|length > 0 %}
   <h5>{{selected_users|length}} friends Selected</h5>
 {% endif %}
