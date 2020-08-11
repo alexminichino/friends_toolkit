@@ -12,11 +12,35 @@
 {% if selected_users|length > 0 %}
   <h5>{{selected_users|length}} friends Selected</h5>
 {% endif %}
+
+{% if report_exitst %}
+    <a href="/report" class="btn btn-primary btn active" style="width: 100%;" role="button" aria-pressed="true">Download latest report</a>
+    <br>
+  {% endif %}
+
+<form action="/select_friends" method="GET" id="form_search"  onsubmit="add_checkboxes(this)">
+
+  <div class="form-group">
+    <label for="search">Search users by name</label>
+    <input type="text" class="form-control" id="search"  placeholder="Name to search" name="name_to_search" value="{{ name_to_search if name_to_search|length >0 }}" >
+  </div>
+  <div class="form-group">
+    <button type="submit" style="width: 100%;" class="btn btn-primary" >Search</button>
+    <small class="form-text text-muted">The Search does not forget selected</small>
+  </div>
+  {% if name_to_search|length >0 %}
+  <div class="form-group">
+    <button type="submit" style="width: 100%;" class="btn btn-primary" onclick="clearSearch(this)">Show All</button>
+    <small class="form-text text-muted">The Search all does not forget selected</small>
+  </div>
+  {% endif %}
+
+</form>
+
+
 <form action="/compose_message" method="POST">
 
-  {% if report_exitst %}
-    <a href="/report" class="btn btn-primary btn active" style="width: 100%;" role="button" aria-pressed="true">Download latest report</a>
-  {% endif %}
+  
 
   <div class="form-group">
     <label for="select_limit">Friends per page</label>
@@ -125,8 +149,18 @@
       }
     } 
     function add_checkboxes(source){
-      href= source.href
-      $(source).prop("href", href+getSelectedBoxesQueryString()+getDeselectedBoxesQueryString() )
+      if (source.nodeName=='A'){
+        url= source.href;
+        $(source).prop("href", url+getSelectedBoxesQueryString()+getDeselectedBoxesQueryString() )
+      }
+      else{        
+        for (selected of getSelectedBoxesArray()){
+          $(source).append("<input type='hidden' name='selected_users' value='"+selected+"'>");
+        }
+        for (unselected of getDeselectedBoxesQueryArray()){
+          $(source).append("<input type='hidden' name='unselected_users' value='"+unselected+"'>");
+        }
+      }
     }
     function getSelectedBoxesQueryString(){
       queryString=""
@@ -144,8 +178,28 @@
       return queryString;
     }
 
+    function getSelectedBoxesArray(){
+      selected = []
+      $(".select_users:checked").each(function(){
+          selected.push(this.value);
+      });
+      return selected;
+    }
+
+    function getDeselectedBoxesQueryArray(){
+      unselected = [];
+      $(".pre_selected_users:not(:checked)").each(function(){
+          unselected.push(this.value);
+      });
+      return unselected;
+    }
+
     function changeLimit(select){      
       location.href = "/select_friends?page={{current_page}}&limit="+select.value;
+    }
+
+    function clearSearch(source){
+      $("#search").val("")
     }
   </script>
 {% endblock %}

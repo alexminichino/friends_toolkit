@@ -51,6 +51,7 @@ def select_friends():
     limit= request.args.get('limit', default = 100, type = int)
     reset= request.args.get('reset', default = False, type = bool)
     page= request.args.get('page', default = 1, type = int)
+    name_to_search= request.args.get('name_to_search', default = "", type = str)
     offset = (page - 1) * limit
     selected_users= request.args.getlist("selected_users")
     unselected_users = request.args.getlist("unselected_users")
@@ -60,9 +61,10 @@ def select_friends():
          selected_users = list(set(selected_users) - set(unselected_users))
     session['selected_users'] = selected_users 
     friends = get_serialized_friends_or_fetch_all()
+    friends = [(user) for user in friends if name_to_search.lower() in user.name.lower()]
     number_friends = len(friends)
     friends = friends[offset:(limit + offset if limit is not None else None)]
-    return render_template("friends.html", friends= friends , contacted_friends=  get_contacted_friends_by_csv(), report_exitst = report_exitst(), number_friends= number_friends, selected_users=selected_users, number_pages=math.ceil(number_friends/limit), current_page = page, limit_friends_per_page=limit)
+    return render_template("friends.html", friends=  friends , contacted_friends=  get_contacted_friends_by_csv(), report_exitst = report_exitst(), number_friends= number_friends, selected_users=selected_users, number_pages=math.ceil(number_friends/limit), current_page = page, limit_friends_per_page=limit, name_to_search=name_to_search)
     
 @app.route("/compose_message",methods=["POST","GET"])
 def compose_message(): 
