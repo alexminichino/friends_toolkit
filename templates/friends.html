@@ -85,7 +85,7 @@
   {% endif %}
 
   <th scope="row">{{user.uid}}</th>
-  <td><a href="{{user.url}}">{{user.name}}</a></td>
+  <td><a href="{{user.url}}" target="_blank">{{user.name}}</a></td>
   <td><img src="{{user.photo}}" style="height:50px;"></td>
   <td>
     {% if user.gender.startswith('male_') %}
