@@ -15,9 +15,13 @@
 {% endif %}
 
 {% if selected_users|length > 0 %}
-  <h5>{{selected_users|length}} friends Selected</h5>
+  <h5>{{selected_users|length}} Friends selected previously</h5>
 {% endif %}
-
+<h5>
+  <div id="number_selected_friends">
+    <span></span> selected in this page
+  </div>
+</h5>
 {% if report_exitst %}
     <a href="/report" class="btn btn-primary btn active" style="width: 100%;" role="button" aria-pressed="true">Download latest report</a>
     <br>
@@ -40,22 +44,17 @@
   </div>
   {% endif %}
 
-</form>
-
-
-<form action="/compose_message" method="POST">
-
-  
-
   <div class="form-group">
     <label for="select_limit">Friends per page</label>
-    <select class="form-control" id="select_limit" onchange="changeLimit(this)">
+    <select class="form-control" id="select_limit" name="limit" onchange="changeLimit(this)">
       {% for i in  range(50, 500+1, 50)%}
         <option {{ 'selected' if limit_friends_per_page == i}} value="{{i}}">{{i}}</option>
       {% endfor %}
     </select>
   </div>
 
+</form>
+<form action="/compose_message" method="POST">
 <table class="table">
 <thead>
   <tr>
@@ -136,14 +135,16 @@
       $(".not_contected").find(".select_users").prop('checked', source.checked);
       onselectedItem();
     } 
-    function onselectedItem(){      
-      if ($(".select_users").is(":checked")){
+    function onselectedItem(){    
+      len = $(".select_users").filter(':checked').length  
+      if ( len > 0){
         $("#compose_button").show();
       }
       else{
         if (! $("#compose_button").hasClass("force_display"))
           $("#compose_button").hide();
       }
+      $("#number_selected_friends").find("span").html(len)
     } 
     function add_checkboxes(source){
       if (source.nodeName=='A'){
@@ -192,12 +193,16 @@
     }
 
     function changeLimit(select){      
-      location.href = "/select_friends?page={{current_page}}&limit="+select.value;
+      //location.href = "/select_friends?page={{current_page}}&limit="+select.value;
+      $("#form_search").submit();
     }
 
     function clearSearch(source){
       $("#search").val("")
     }
+    $( document ).ready(function() {
+      $("#number_selected_friends").find("span").html($(".pre_selected_users").length)
+    });
   </script>
 {% endblock %}
 
