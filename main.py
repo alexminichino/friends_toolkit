@@ -4,6 +4,7 @@ import random
 import csv
 import datetime
 import webbrowser
+import math
 from flask import Flask, render_template, redirect, request, session,flash, send_file
 from werkzeug.utils import secure_filename
 from messages_tool import *
@@ -25,7 +26,7 @@ def before_request():
 
 @app.route("/")
 def index():
-    return redirect("/select_friends")
+    return redirect("/select_friends?reset=True")
 
 @app.route("/sign_in", methods=["GET","POST"])
 def sign_in():
@@ -36,23 +37,40 @@ def sign_in():
                 messages_tool= MessagesTool(email,password)
                 if messages_tool.authenticate():   
                     session['sessionCookie'] = messages_tool.client.getSession()
-                    return redirect("/select_friends")
+                    return redirect("/select_friends?reset=True")
                 else:
                     flash('Invalid Credentials')
                     return render_template("form.html")
     return render_template("form.html")
 
 @app.route("/select_friends")
-def select_friends():    
-    return render_template("friends.html", friends= messages_tool.fetch_users(), contacted_friends=  get_contacted_friends_by_csv(), report_exitst = report_exitst() )
+def select_friends():  
+    limit= request.args.get('limit', default = 100, type = int)
+    reset= request.args.get('reset', default = False, type = bool)
+    page= request.args.get('page', default = 1, type = int)
+    offset = (page - 1) * limit
+    selected_users= request.args.getlist("selected_users")
+    unselected_users = request.args.getlist("unselected_users")
+    if 'selected_users' in session and not reset:
+        selected_users = selected_users + list( set(session['selected_users']) - set(selected_users))
+    if len(unselected_users)>0:
+         selected_users = list(set(selected_users) - set(unselected_users))
+    session['selected_users'] = selected_users 
+    friends = messages_tool.fetch_users()
+    number_friends = len(friends)
+    friends = friends[offset:(limit + offset if limit is not None else None)]
+    return render_template("friends.html", friends= friends , contacted_friends=  get_contacted_friends_by_csv(), report_exitst = report_exitst(), number_friends= number_friends, selected_users=selected_users, number_pages=math.ceil(number_friends/limit), current_page = page, limit_friends_per_page=limit)
     
 @app.route("/compose_message",methods=["POST","GET"])
 def compose_message(): 
     if not os.path.exists(UPLOAD_DIRECTORY):
         os.makedirs(UPLOAD_DIRECTORY)
     old_images = os.listdir(os.path.join(UPLOAD_DIRECTORY))
-    selected_users= request.form.getlist("selected_users")    
-    session['selected_users'] = selected_users  
+    selected_users= request.form.getlist("selected_users")  
+    if 'selected_users' in session :
+        selected_users = selected_users + session['selected_users']
+    else:
+        session['selected_users'] = selected_users  
     if len(selected_users) < 1:
         flash("Select at least 1 friend!")
         return redirect("/select_friends") 
@@ -95,7 +113,7 @@ def send_messages():
                     messages_tool.send_image(user,image,"")
             time.sleep(time_to_sleep)
     flash(str(messages_sent)+' Messages sent')
-    return redirect("/select_friends")
+    return redirect("/select_friends?reset=True")
 
 @app.route("/logout")
 def logout():

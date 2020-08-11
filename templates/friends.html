@@ -8,13 +8,24 @@
 
 {% block content %}
 <h3>Friends list</h3>
-<h4>Number of friends {{friends|length}}</h4>
-
+<h4>Total number of friends {{number_friends}}</h4>
+{% if selected_users|length > 0 %}
+  <h5>{{selected_users|length}} friends Selected</h5>
+{% endif %}
 <form action="/compose_message" method="POST">
 
   {% if report_exitst %}
-    <a href="/report" class="btn btn-primary btn active" role="button" aria-pressed="true">Download latest report</a>
+    <a href="/report" class="btn btn-primary btn active" style="width: 100%;" role="button" aria-pressed="true">Download latest report</a>
   {% endif %}
+
+  <div class="form-group">
+    <label for="select_limit">Friends per page</label>
+    <select class="form-control" id="select_limit" onchange="changeLimit(this)">
+      {% for i in  range(50, 500+1, 50)%}
+        <option {{ 'selected' if limit_friends_per_page == i}} value="{{i}}">{{i}}</option>
+      {% endfor %}
+    </select>
+  </div>
 
 <table class="table">
 <thead>
@@ -25,12 +36,12 @@
     <th scope="col">Gender</th>
     <th>
       <span style="display: block;">
-        <span style="float: left;">Select All</span>
+        <span style="float: left;">Select All (in page)</span>
         <input type="checkbox" id="select_all" class="form-check-input" onClick="toggle_all(this)" style="display: block;">
       </span><br>
 
       <span style="display: block;">
-        <span style="float: left;">Select not contacted</span>
+        <span style="float: left;">Select not contacted (in page)</span>
         <input type="checkbox" id="select_all_new" class="form-check-input" onClick="toggle_new(this)" style="display: block;">
       </span>
     </th>
@@ -57,7 +68,7 @@
     {% endif %}
   </td>
   <td>
-  <input type="checkbox" name="selected_users" class="select_users  form-check-input" value="{{user.uid}}" onClick="onselectedItem()">
+  <input type="checkbox" name="selected_users" class="select_users  form-check-input {{ 'pre_selected_users' if user.uid in selected_users }}" value="{{user.uid}}" onClick="onselectedItem()" {{ 'checked' if user.uid in selected_users }}>
 
   </td>  
   
@@ -65,12 +76,23 @@
  {% endfor %}
 </tbody>
 </table>
-<button type="submit" id="compose_button" class="btn btn-primary" style="position: fixed;bottom: 26px;left: 45%;right: 45%;display:none;">Compose Message</button>
+<button type="submit" id="compose_button" class="btn btn-primary" style="position: fixed;bottom: 100px;left: 45%;right: 45%;display:none;">Compose Message</button>
 </form>
 
-  {% if feedback %}
-  <p class="text-danger float-right">{{ feedback }}</p>
-  {% endif %}
+<nav aria-label="Page navigation example">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {{ 'disabled' if current_page < 2}}">
+      <a class="page-link" href="/select_friends?page={{current_page-1}}&limit={{limit_friends_per_page}}" tabindex="-1"  onclick="add_checkboxes(this)">Previous</a>
+    </li>
+    {% for i in range(1, number_pages+1)%}
+      <li class="page-item {{ 'active' if i==current_page}}"><a class="page-link" href="/select_friends?page={{i}}&limit={{limit_friends_per_page}}"  onclick="add_checkboxes(this)">{{i}}</a></li>
+    {% endfor %}
+    <li class="page-item {{ 'disabled' if current_page == number_pages}}">
+      <a class="page-link" href="/select_friends?page={{current_page+1}}&limit={{limit_friends_per_page}}" onclick="add_checkboxes(this)">Next</a>
+    </li>
+  </ul>
+</nav>
+ 
 {% endblock %}
 
 {% block footer %}
@@ -90,8 +112,8 @@
     } 
 
     function toggle_new(source){
-    $("#select_all").prop('checked', false);
-    $(".not_contected").find(".select_users").prop('checked', source.checked);
+      $("#select_all").prop('checked', false);
+      $(".not_contected").find(".select_users").prop('checked', source.checked);
       onselectedItem();
     } 
     function onselectedItem(){      
@@ -102,6 +124,29 @@
         $("#compose_button").hide();
       }
     } 
+    function add_checkboxes(source){
+      href= source.href
+      $(source).prop("href", href+getSelectedBoxesQueryString()+getDeselectedBoxesQueryString() )
+    }
+    function getSelectedBoxesQueryString(){
+      queryString=""
+      $(".select_users:checked").each(function(){
+          queryString+="&selected_users="+this.value;
+      });
+      return queryString;
+    }
+
+    function getDeselectedBoxesQueryString(){
+      queryString ="";
+      $(".pre_selected_users:not(:checked)").each(function(){
+          queryString+="&unselected_users="+this.value;
+      });
+      return queryString;
+    }
+
+    function changeLimit(select){      
+      location.href = "/select_friends?page={{current_page}}&limit="+select.value;
+    }
   </script>
 {% endblock %}
 
