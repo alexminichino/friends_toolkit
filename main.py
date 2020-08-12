@@ -124,7 +124,7 @@ def send_messages():
 @app.route("/logout")
 def logout():
     session.clear()
-    os.remove(FRIENDS_DUMP_FILE)
+    remove_dump_if_exists()
     return redirect("/sign_in")
 
 @app.route("/report")
@@ -211,6 +211,10 @@ def write_friends_on_dump_file(json_values):
      f = open(FRIENDS_DUMP_FILE, "w")
      with f:
          f.write(json_values)
+
+def remove_dump_if_exists():
+    if os.path.exists(FRIENDS_DUMP_FILE):
+        os.remove(FRIENDS_DUMP_FILE)
 
 if __name__ == "__main__":
     app.run(debug=False)
