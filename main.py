@@ -158,14 +158,14 @@ def log_message(user,message, messages_sent, total):
         mode = 'a' 
     else:
         mode = 'w'
-    f = open(REPORT_FILE_NAME, mode)
+    f = open(REPORT_FILE_NAME, mode, encoding="utf-8")
     now = datetime.datetime.now() 
     with f:
         fnames = ['UID', 'NAME', "MESSAGE", "DATE", "TIME"]
         writer = csv.DictWriter(f, fieldnames=fnames)
         if mode=='w':                
             writer.writeheader()
-        writer.writerow({'UID' : user.uid, 'NAME' : user.name,  'MESSAGE': message, 'DATE' : now.strftime("%x"), 'TIME' : now.strftime("%X") })
+        writer.writerow({'UID' : user.uid, 'NAME' : user.name.encode("utf-8"),  'MESSAGE': message.encode("utf-8"), 'DATE' : now.strftime("%x"), 'TIME' : now.strftime("%X") })
     #LOG IN CONSOLE
     print("\n\n\n******\n******Sent "+ str(messages_sent)+ " of "+ str(total) + " to user "+ user.name+ " at "+ now.strftime("%X") +"******\n******\n\n\n", file=sys.stdout )
 
