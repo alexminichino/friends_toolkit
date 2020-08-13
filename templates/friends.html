@@ -16,6 +16,7 @@
 
 {% if selected_users|length > 0 %}
   <h5>{{selected_users|length}} Friends selected previously</h5>
+  <a href="/select_friends?reset=True" class="btn btn-primary btn active" style="width: 100%;" role="button" aria-pressed="true">Deselect previous</a>
 {% endif %}
 <h5>
   <div id="number_selected_friends">

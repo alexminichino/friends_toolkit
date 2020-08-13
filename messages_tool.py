@@ -13,7 +13,11 @@ class MessagesTool(object):
         
 
     def send_message(self,user, message):
-        self.client.send(Message(text=message), thread_id=user.uid, thread_type=ThreadType.USER)
+        try:
+            message_id = self.client.send(Message(text=message), thread_id=user.uid, thread_type=ThreadType.USER)
+            return message_id != None
+        except FBchatUserError as exception: 
+            return False 
 
     def send_image(self, user, image_path, caption):
         self.client.sendLocalImage(
@@ -55,13 +59,14 @@ class MyClient(Client):
         return input("Please enter your 2FA code -->")
 
 class SimplifiedUser():
-    def __init__(self, uid, name, first_name, gender, photo, url ):
+    def __init__(self, uid, name, first_name, gender, photo, url, is_preselected=False ):
         self.uid=uid
         self.name=name
         self.first_name = first_name
         self.gender = gender
         self.photo = photo
         self.url = url
+        self.is_preselected= is_preselected
     
 def convert_to_dict(obj):
     """

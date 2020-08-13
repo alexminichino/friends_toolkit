@@ -29,7 +29,7 @@ def before_request():
 
 @app.route("/")
 def index():
-    return redirect("/select_friends?reset=True")
+    return redirect("/select_friends")
 
 @app.route("/sign_in", methods=["GET","POST"])
 def sign_in():
@@ -40,7 +40,7 @@ def sign_in():
                 messages_tool= MessagesTool(email,password)
                 if messages_tool.authenticate():   
                     session['sessionCookie'] = messages_tool.client.getSession()
-                    return redirect("/select_friends?reset=True")
+                    return redirect("/select_friends")
                 else:
                     flash('Invalid Credentials')
                     return render_template("form.html")
@@ -109,7 +109,9 @@ def send_messages():
             message=message_backup
             message= message.replace("{{name}}",user.name)
             message= message.replace("{{first_name}}",user.first_name)
-            messages_tool.send_message(user,message) 
+            if not messages_tool.send_message(user,message):
+                flash("Problem with facebook API "+str(messages_sent)+' messages sent of '+str(len(selected_users)))
+                return redirect("/select_friends")
             messages_sent+=1
             log_message(user,message, messages_sent, len(selected_users))
             if saved_images :
@@ -123,7 +125,8 @@ def send_messages():
 
 @app.route("/logout")
 def logout():
-    session.clear()
+    #session.clear()
+    session.pop("sessionCookie")
     remove_dump_if_exists()
     return redirect("/sign_in")
 
