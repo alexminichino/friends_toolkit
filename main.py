@@ -61,10 +61,11 @@ def select_friends():
          selected_users = list(set(selected_users) - set(unselected_users))
     session['selected_users'] = selected_users 
     friends = get_serialized_friends_or_fetch_all()
+    update_lists(request, friends)
     friends = [(user) for user in friends if name_to_search.lower() in user.name.lower()]
     number_friends = len(friends)
     friends = friends[offset:(limit + offset if limit is not None else None)]
-    return render_template("friends.html", friends=  friends , contacted_friends=  get_contacted_friends_by_csv(), report_exitst = report_exitst(), number_friends= number_friends, selected_users=selected_users, number_pages=math.ceil(number_friends/limit), current_page = page, limit_friends_per_page=limit, name_to_search=name_to_search)
+    return render_template("friends.html", friends=  friends , contacted_friends=  get_friends_by_csv(REPORT_FILE_NAME), report_exitst = report_exitst(), number_friends= number_friends, selected_users=selected_users, number_pages=math.ceil(number_friends/limit), current_page = page, limit_friends_per_page=limit, name_to_search=name_to_search)
     
 @app.route("/compose_message",methods=["POST","GET"])
 def compose_message(): 
@@ -79,6 +80,7 @@ def compose_message():
         flash("Select at least 1 friend!")
         return redirect("/select_friends") 
     friends= get_serialized_friends_or_fetch_all()
+    update_lists(request, friends)
     return render_template("compose_message.html", friends= [(user) for user in friends if user.uid in selected_users], old_images=old_images )
 
 @app.route("/send_messages",methods=["POST"])
@@ -125,8 +127,8 @@ def send_messages():
 
 @app.route("/logout")
 def logout():
-    #session.clear()
-    session.pop("sessionCookie")
+    if 'sessionCookie':
+        session.pop("sessionCookie")
     remove_dump_if_exists()
     return redirect("/sign_in")
 
@@ -157,11 +159,26 @@ def get_path_by_old_image(old_images):
     return paths
 
 def log_message(user,message, messages_sent, total):
-    if os.path.exists(REPORT_FILE_NAME):
+    put_friend_in_csv(REPORT_FILE_NAME, user,message)
+    #LOG IN CONSOLE
+    print("\n\n\n******\n******Sent "+ str(messages_sent)+ " of "+ str(total) + " to user "+ user.name+ " at "+ now.strftime("%X") +"******\n******\n\n\n", file=sys.stdout )
+
+def get_friends_by_csv(filename):
+    rows =[]
+    if os.path.exists(filename):
+        f = open(filename, 'r')        
+        with f:
+            reader = csv.DictReader(f)        
+            for row in reader:
+                rows.append(row['UID'])
+    return rows
+
+def put_friend_in_csv(filename,user,message):
+    if os.path.exists():
         mode = 'a' 
     else:
         mode = 'w'
-    f = open(REPORT_FILE_NAME, mode, encoding="utf-8")
+    f = open(filename, mode, encoding="utf-8")
     now = datetime.datetime.now() 
     with f:
         fnames = ['UID', 'NAME', "MESSAGE", "DATE", "TIME"]
@@ -169,18 +186,24 @@ def log_message(user,message, messages_sent, total):
         if mode=='w':                
             writer.writeheader()
         writer.writerow({'UID' : user.uid, 'NAME' : user.name.encode("utf-8"),  'MESSAGE': message.encode("utf-8"), 'DATE' : now.strftime("%x"), 'TIME' : now.strftime("%X") })
-    #LOG IN CONSOLE
-    print("\n\n\n******\n******Sent "+ str(messages_sent)+ " of "+ str(total) + " to user "+ user.name+ " at "+ now.strftime("%X") +"******\n******\n\n\n", file=sys.stdout )
 
-def get_contacted_friends_by_csv():
-    rows =[]
-    if os.path.exists(REPORT_FILE_NAME):
-        f = open(REPORT_FILE_NAME, 'r')        
-        with f:
-            reader = csv.DictReader(f)        
-            for row in reader:
-                rows.append(row['UID'])
-    return rows
+def update_lists(request, friends):
+    excluded_users= request.args.getlist("excluded_users")
+    pre_contacted_users = request.args.getlist("pre_contacted_users")    
+    unselected_excluded_users = request.args.getlist("unselected_excluded_users")
+    unselected_pre_contacted_users = request.args.getlist("unselected_pre_contacted_users")
+    
+    if len(pre_contacted_users) > 0 or len(excluded_users) > 0 or len(unselected_excluded_users) > 0 or len(unselected_pre_contacted_users)> 0:
+        for i,friend in enumerate(friends):
+            if friend.uid in excluded_users:
+                friends[i].is_excluded = True
+            elif friend.uid in unselected_excluded_users and friend.is_excluded :
+                friends[i].is_excluded = False
+            if friend.uid in pre_contacted_users:
+                friends[i].is_precontacted = True
+            elif friend.uid in unselected_pre_contacted_users and friend.is_precontacted :
+                friends[i].is_precontacted = False
+        save_friends_list_in_json(friends)
 
 def report_exitst():
     return os.path.exists(REPORT_FILE_NAME)
@@ -200,10 +223,12 @@ def get_serialized_friends_or_fetch_all():
                         photo = friend.photo,
                         url = friend.url
                     ))
-    json_values= json.dumps(friends, default=convert_to_dict) 
-                  
-    write_friends_on_dump_file(json_values)
+    save_friends_list_in_json(friends)
     return friends
+
+def save_friends_list_in_json(friends):
+    json_values= json.dumps(friends, default=convert_to_dict) 
+    write_friends_on_dump_file(json_values)
 
 def read_friends_from_dump_file():
      f = open(FRIENDS_DUMP_FILE, "r")

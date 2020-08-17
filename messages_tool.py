@@ -59,14 +59,15 @@ class MyClient(Client):
         return input("Please enter your 2FA code -->")
 
 class SimplifiedUser():
-    def __init__(self, uid, name, first_name, gender, photo, url, is_preselected=False ):
+    def __init__(self, uid, name, first_name, gender, photo, url, is_precontacted=False, is_excluded=False ):
         self.uid=uid
         self.name=name
         self.first_name = first_name
         self.gender = gender
         self.photo = photo
         self.url = url
-        self.is_preselected= is_preselected
+        self.is_precontacted= is_precontacted
+        self.is_excluded= is_excluded
     
 def convert_to_dict(obj):
     """

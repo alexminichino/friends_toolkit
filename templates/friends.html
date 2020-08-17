@@ -74,6 +74,20 @@
         <input type="checkbox" id="select_all_new" class="form-check-input" onClick="toggle_new(this)" style="display: block;">
       </span>
     </th>
+
+    <th>
+      <span style="display: block;">
+        <span style="float: left;">Exlude all</span>
+        <input type="checkbox" id="select_all_to_exlude" class="form-check-input" onClick="toggle_all_to_exclude(this)" style="display: block;">
+      </span>
+    </th>
+
+    <th>
+      <span style="display: block;">
+        <span style="float: left;">Mark all as already contected</span>
+        <input type="checkbox" id="select_all_to_mark_contacted" class="form-check-input" onClick="toggle_all_to_mark_contacted(this)" style="display: block;">
+      </span>
+    </th>
   </tr>
 </thead>
 <tbody>
@@ -98,9 +112,15 @@
   </td>
   <td>
   <input type="checkbox" name="selected_users" class="select_users  form-check-input {{ 'pre_selected_users' if user.uid in selected_users }}" value="{{user.uid}}" onClick="onselectedItem()" {{ 'checked' if user.uid in selected_users }}>
-
   </td>  
+
+  <td>
+    <input type="checkbox" name="excluded_users" id="exclude_{{user.uid}}" onclick="deselectBrother(this,{{user.uid}})" class="excluded_users  form-check-input {{ 'excluded_pre_selected_users' if user.is_excluded }}" value="{{user.uid}}" onClick="onselectedItem()" {{ 'checked' if user.is_excluded }}>
+  </td>
   
+  <td>
+    <input type="checkbox" name="pre_contacted_users" id="mark_{{user.uid}}" onclick="deselectBrother(this,{{user.uid}})" class="pre_contacted_users  form-check-input {{ 'pre_contacted_pre_selected_users' if user.is_precontacted }}" value="{{user.uid}}" onClick="onselectedItem()" {{ 'checked' if user.is_precontacted }}>
+  </td>  
 </tr>
  {% endfor %}
 </tbody>
@@ -136,6 +156,18 @@
       $(".not_contected").find(".select_users").prop('checked', source.checked);
       onselectedItem();
     } 
+    function toggle_all_to_exclude(source){      
+      $("#select_all_to_mark_contacted").prop('checked', false);
+      $(".pre_contacted_users").prop('checked', false);
+      $(".excluded_users").prop('checked', source.checked);
+      onselectedItem();
+    }
+    function toggle_all_to_mark_contacted(source){      
+      $("#select_all_to_exlude").prop('checked', false);
+      $(".excluded_users").prop('checked', false);
+      $(".pre_contacted_users").prop('checked', source.checked);
+      onselectedItem();
+    } 
     function onselectedItem(){    
       len = $(".select_users").filter(':checked').length  
       if ( len > 0){
@@ -150,7 +182,7 @@
     function add_checkboxes(source){
       if (source.nodeName=='A'){
         url= source.href;
-        $(source).prop("href", url+getSelectedBoxesQueryString()+getDeselectedBoxesQueryString() )
+        $(source).prop("href", url+getSelectedBoxesQueryString()+getDeselectedBoxesQueryString()+ getSelectedBoxesQueryStringExcluded()+ getDeselectedBoxesQueryStringExcluded()+ getSelectedBoxesQueryStringPreContacted() + getDeselectedBoxesQueryStringPreContacted() )
       }
       else{        
         for (selected of getSelectedBoxesArray()){
@@ -159,6 +191,19 @@
         for (unselected of getDeselectedBoxesQueryArray()){
           $(source).append("<input type='hidden' name='unselected_users' value='"+unselected+"'>");
         }
+        for (selected of getSelectedBoxesArrayExcluded()){
+          $(source).append("<input type='hidden' name='excluded_users' value='"+selected+"'>");
+        }
+        for (unselected of getDeselectedBoxesQueryArrayExcluded()){
+          $(source).append("<input type='hidden' name='unselected_excluded_users' value='"+unselected+"'>");
+        }
+        for (selected of getSelectedBoxesArrayPreConctacted()){
+          $(source).append("<input type='hidden' name='pre_contacted_users' value='"+selected+"'>");
+        }
+        for (unselected of getDeselectedBoxesQueryArrayPreContacted()){
+          $(source).append("<input type='hidden' name='unselected_pre_contacted_users' value='"+unselected+"'>");
+        }
+        
       }
     }
     function getSelectedBoxesQueryString(){
@@ -175,6 +220,70 @@
           queryString+="&unselected_users="+this.value;
       });
       return queryString;
+    }
+
+    function getSelectedBoxesQueryStringExcluded(){
+      queryString=""
+      $(".excluded_users:checked").each(function(){
+          queryString+="&excluded_users="+this.value;
+      });
+      return queryString;
+    }
+
+    function getDeselectedBoxesQueryStringExcluded(){
+      queryString ="";
+      $(".excluded_pre_selected_users:not(:checked)").each(function(){
+          queryString+="&unselected_excluded_users="+this.value;
+      });
+      return queryString;
+    }
+
+    function getSelectedBoxesQueryStringPreContacted(){
+      queryString=""
+      $(".pre_contacted_users:checked").each(function(){
+          queryString+="&pre_contacted_users="+this.value;
+      });
+      return queryString;
+    }
+
+    function getDeselectedBoxesQueryStringPreContacted(){
+      queryString ="";
+      $(".pre_contacted_pre_selected_users:not(:checked)").each(function(){
+          queryString+="&unselected_pre_contacted_users="+this.value;
+      });
+      return queryString;
+    }
+
+    function getSelectedBoxesArrayExcluded(){
+      selected = []
+      $(".excluded_users:checked").each(function(){
+          selected.push(this.value);
+      });
+      return selected;
+    }
+
+    function getDeselectedBoxesQueryArrayExcluded(){
+      unselected = [];
+      $(".excluded_pre_selected_users:not(:checked)").each(function(){
+          unselected.push(this.value);
+      });
+      return unselected;
+    }
+
+    function getSelectedBoxesArrayPreConctacted(){
+      selected = []
+      $(".pre_contacted_users:checked").each(function(){
+          selected.push(this.value);
+      });
+      return selected;
+    }
+
+    function getDeselectedBoxesQueryArrayPreContacted(){
+      unselected = [];
+      $(".pre_contacted_pre_selected_users:not(:checked)").each(function(){
+          unselected.push(this.value);
+      });
+      return unselected;
     }
 
     function getSelectedBoxesArray(){
@@ -194,7 +303,6 @@
     }
 
     function changeLimit(select){      
-      //location.href = "/select_friends?page={{current_page}}&limit="+select.value;
       $("#form_search").submit();
     }
 
@@ -204,6 +312,14 @@
     $( document ).ready(function() {
       $("#number_selected_friends").find("span").html($(".pre_selected_users").length)
     });
+
+    function deselectBrother(source, id){
+      if($(source).hasClass("excluded_users"))
+          id = "mark_"+id;
+        else
+          id= "exclude_"+id
+        $("#"+id).prop('checked', false);
+    }
   </script>
 {% endblock %}
 
