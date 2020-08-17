@@ -128,7 +128,7 @@ def send_messages():
 @app.route("/logout")
 def logout():
     if 'sessionCookie':
-        session.pop("sessionCookie")
+        session.pop("sessionCookie", None)
     remove_dump_if_exists()
     return redirect("/sign_in")
 
