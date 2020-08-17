@@ -32,7 +32,7 @@ class MessagesTool(object):
 
     def authenticate(self):
         try:
-            self.client = MyClient(self.email,self.password, max_tries=2)
+            self.client = MyClient(self.email,self.password, max_tries=2, user_agent= "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36")
             self.authenticated = True
             return True
         except FBchatUserError as exception:
@@ -47,7 +47,7 @@ class MessagesTool(object):
 
     def getSessionClient(self, session):
         try:
-            self.client = MyClient(self.email, self.password, session_cookies= session, max_tries=1)
+            self.client = MyClient(self.email, self.password, session_cookies= session, max_tries=1, user_agent= "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36")
             self.authenticated = self.client.isLoggedIn()
         except FBchatUserError as exception:            
             self.authenticated=False            
