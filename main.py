@@ -161,6 +161,7 @@ def get_path_by_old_image(old_images):
 def log_message(user,message, messages_sent, total):
     put_friend_in_csv(REPORT_FILE_NAME, user,message)
     #LOG IN CONSOLE
+    now = datetime.datetime.now() 
     print("\n\n\n******\n******Sent "+ str(messages_sent)+ " of "+ str(total) + " to user "+ user.name+ " at "+ now.strftime("%X") +"******\n******\n\n\n", file=sys.stdout )
 
 def get_friends_by_csv(filename):
