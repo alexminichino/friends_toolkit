@@ -107,7 +107,7 @@ def send_messages():
         return redirect("/select_friends")
     message_backup= message
     for user in get_serialized_friends_or_fetch_all():
-        if user.uid in selected_users:
+        if user.uid in selected_users and not user.is_excluded and not user.is_precontacted:
             message=message_backup
             message= message.replace("{{name}}",user.name)
             message= message.replace("{{first_name}}",user.first_name)
