@@ -174,7 +174,7 @@ def get_friends_by_csv(filename):
     return rows
 
 def put_friend_in_csv(filename,user,message):
-    if os.path.exists():
+    if os.path.exists(filename):
         mode = 'a' 
     else:
         mode = 'w'
