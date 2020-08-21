@@ -129,7 +129,7 @@ def send_messages():
 def logout():
     if 'sessionCookie':
         session.pop("sessionCookie", None)
-    remove_dump_if_exists()
+    #remove_dump_if_exists()
     return redirect("/sign_in")
 
 @app.route("/report")
