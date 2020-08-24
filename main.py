@@ -116,6 +116,7 @@ def send_messages():
                 return redirect("/select_friends")
             messages_sent+=1
             log_message(user,message, messages_sent, len(selected_users))
+            session['selected_users'] = selected_users.remove(user.uid)
             if saved_images :
                 for image in saved_images:
                     time.sleep(2)
