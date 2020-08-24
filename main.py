@@ -125,6 +125,7 @@ def send_messages():
                     time.sleep(time_to_sleep)
             else:
                 cannot_be_contacted_users_alert += user.name +"<br>"
+                print("\n\n\n******\n****** CANNOT be Sent message to user "+ user.name , file=sys.stdout )
     if cannot_be_contacted_users_alert!="":
         cannot_be_contacted_users_alert = "<br> but it was not possible send message at: <br> " + cannot_be_contacted_users_alert
     flash(str(messages_sent)+' Messages sent' + cannot_be_contacted_users_alert)
