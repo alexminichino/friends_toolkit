@@ -16,7 +16,7 @@ class MessagesTool(object):
         try:
             message_id = self.client.send(Message(text=message), thread_id=user.uid, thread_type=ThreadType.USER)
             return message_id != None
-        except FBchatUserError as exception: 
+        except (FBchatUserError, FBChatFacebookError) as exception: 
             return False 
 
     def send_image(self, user, image_path, caption):

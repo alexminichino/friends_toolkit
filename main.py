@@ -106,25 +106,28 @@ def send_messages():
     else:
         return redirect("/select_friends")
     message_backup= message
+    cannot_be_contacted_users_alert =""
     for user in get_serialized_friends_or_fetch_all():
         if user.uid in selected_users and not user.is_excluded and not user.is_precontacted:
             message=message_backup
             message= message.replace("{{name}}",user.name)
             message= message.replace("{{first_name}}",user.first_name)
-            if not messages_tool.send_message(user,message):
-                flash("Problem with facebook API "+str(messages_sent)+' messages sent of '+str(len(selected_users)))
-                return redirect("/select_friends")
-            messages_sent+=1
-            log_message(user,message, messages_sent, len(selected_users))
-            selected_users.remove(user.uid)
-            session['selected_users'] = selected_users
-            if saved_images :
-                for image in saved_images:
-                    time.sleep(2)
-                    messages_tool.send_image(user,image,"")
-            if messages_sent < len(selected_users):
-                time.sleep(time_to_sleep)
-    flash(str(messages_sent)+' Messages sent')
+            if messages_tool.send_message(user,message):
+                messages_sent+=1
+                log_message(user,message, messages_sent, len(selected_users))
+                selected_users.remove(user.uid)
+                session['selected_users'] = selected_users
+                if saved_images :
+                    for image in saved_images:
+                        time.sleep(2)
+                        messages_tool.send_image(user,image,"")
+                if messages_sent < len(selected_users):
+                    time.sleep(time_to_sleep)
+            else:
+                cannot_be_contacted_users_alert += user.name +"<br>"
+    if cannot_be_contacted_users_alert!="":
+        cannot_be_contacted_users_alert = "<br> but it was not possible send message at: <br> " + cannot_be_contacted_users_alert
+    flash(str(messages_sent)+' Messages sent' + cannot_be_contacted_users_alert)
     return redirect("/select_friends?reset=True")
 
 @app.route("/logout")
